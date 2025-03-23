@@ -6,7 +6,8 @@ public class WebConfig {
 
 	public static final String DOCUMENT_ROOT="/Users/Samsung/Documents/SerWeJa";
 	
-	public static HashMap<String, String> content = new HashMap<String, String>() {{
+	public static HashMap<String, String> content = new HashMap<>() {
+	{
 		put(".html", "text/html");
 		put(".htm", "text/html");
 		put(".jpg", "image/jpg");
