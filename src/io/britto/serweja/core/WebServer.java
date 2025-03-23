@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 
 import io.britto.serweja.http.Request;
+import io.britto.serweja.http.Response;
 import io.britto.serweja.util.WebConfig;
 import io.britto.serweja.util.WebLogger;
 
@@ -106,8 +107,10 @@ public class WebServer {
 				char buf[] = new char[len];
 				br.read(buf);
 				request.setBody(new String(buf));
+				
 			}
-			handleOutput(socket, request);
+			WebLogger.log(request.toString());
+			handleOutput(socket, request, new Response(socket.getOutputStream()));
 			socket.close();
 		}
 		catch(IOException e) {
@@ -115,7 +118,7 @@ public class WebServer {
 		}
 	}
 	
-	private void handleOutput(Socket socket, Request request) {
+	private void handleOutput(Socket socket, Request request, Response response) {
 //		WebLogger.log("HTTP Method: " + httpMethod);
 //		WebLogger.log("Resource Path: " + resourcePath);
 		
@@ -124,20 +127,15 @@ public class WebServer {
 		//completePath = completePath.replace(" ", "");
 		
 		try {
-			OutputStream out = socket.getOutputStream();
 			if(Files.exists(Paths.get(completePath))){
 				WebLogger.log("Complete Path: " + completePath);
 				byte[] content = Files.readAllBytes(Paths.get(completePath));
-				String extension = completePath.substring(completePath.lastIndexOf("."));
-				out.write("HTTP/1.1 200 OK\r\n" .getBytes());
-				out.write(("Date:" + LocalDate.now().toString() + "\r\n").getBytes());
-				out.write(("Content-Type:" + WebConfig.content.get(extension) + "\r\n").getBytes());
-				out.write(("Content-Length:" + content.length + "\r\n").getBytes());
-				out.write("\r\n" .getBytes());
-				out.write(content);
-				out.write("\r\n\r\n" .getBytes());
-				out.flush();
-				out.close();
+				String extension = completePath.substring(completePath.lastIndexOf(".") + 1);
+				response.write("HTTP/1.1 200" + WebConfig.textCodes.get(200)+ "\r\n");
+				response.write("Content-Type" +  WebConfig.content.get(extension)+"\r\n");
+				//response.write(("Date:" + LocalDate.now().toString())+ "\r\n");
+				response.setContent(content);
+				response.close();
 			}
 			else {
 				WebLogger.log("404 - NOT FOUND");

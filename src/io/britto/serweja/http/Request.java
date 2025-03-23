@@ -58,9 +58,6 @@ public class Request {
 
 	@Override
 	public String toString() {
-	
-		return "Request [httpMethod=" + httpMethod + ", path=" + path + "]";
+		return "Request [httpMethod=" + httpMethod + ", path=" + path + ", body=" + body + "]";
 	}
-	
-	
 }
