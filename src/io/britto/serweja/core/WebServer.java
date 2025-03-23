@@ -3,8 +3,14 @@ package io.britto.serweja.core;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.LocalDate;
+
+import io.britto.serweja.util.WebConfig;
 
 public class WebServer {
 
@@ -53,11 +59,11 @@ public class WebServer {
 			String line = null;
 			do {
 				line = br.readLine();
-				if(line.startsWith("GET") || line.startsWith("POST")) {
+				if(line != null && (line.startsWith("GET") || line.startsWith("POST"))) {
 					httpMethod = line.substring(0,line.indexOf(" "));
-					resourcePath = line.substring(line.indexOf(" "), line.lastIndexOf(" "));
+					resourcePath = line.substring(line.indexOf(" ") + 1, line.lastIndexOf(" "));
 					
-					handleOutput(httpMethod, resourcePath);
+					handleOutput(socket, httpMethod, resourcePath);
 				}
 				//System.out.println("DEBUG - " + line);
 			}while(!line.isBlank());
@@ -68,8 +74,37 @@ public class WebServer {
 		}
 	}
 	
-	private void handleOutput(String httpMethod, String resourcePath) {
+	private void handleOutput(Socket socket, String httpMethod, String resourcePath) {
 		System.out.println("HTTP Methdo: " + httpMethod);
 		System.out.println("Resource Path: " + resourcePath);
+		
+		//resourcePath = resourcePath.replace("/", "\\");		
+		String completePath = WebConfig.DOCUMENT_ROOT + resourcePath;
+		//completePath = completePath.replace(" ", "");
+		
+		try {
+			OutputStream out = socket.getOutputStream();
+			if(Files.exists(Paths.get(completePath))){
+				System.out.println("FILE EXISTS");
+				System.out.println("Complete Path: " + completePath);
+				byte[] content = Files.readAllBytes(Paths.get(completePath));
+				String extension = completePath.substring(completePath.lastIndexOf("."));
+				out.write("HTTP/1.1 200 OK\r\n" .getBytes());
+				out.write(("Date:" + LocalDate.now().toString() + "\r\n").getBytes());
+				out.write(("Content-Type:" + WebConfig.content.get(extension) + "\r\n").getBytes());
+				out.write(("Content-Lenght:" + content.length + "\r\n").getBytes());
+				out.write("\r\n" .getBytes());
+				out.write(content);
+				out.write("\r\n\r\n" .getBytes());
+				out.flush();
+				out.close();
+			}
+			else {
+				System.out.println("404 - NOT FOUND");
+			}
+		}
+		catch(IOException e){
+			System.out.println(e.getMessage());
+		}
 	}
 }
