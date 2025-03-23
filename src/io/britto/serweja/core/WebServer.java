@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 
 import io.britto.serweja.util.WebConfig;
+import io.britto.serweja.util.WebLogger;
 
 public class WebServer {
 
@@ -21,8 +22,8 @@ public class WebServer {
 	
 	public WebServer(int port) {
 		try {
+			WebLogger.welcome(port);
 			this.serverSocket = new ServerSocket(port);
-			System.out.println("SerWeJa started on Port: " + port);
 			System.out.println("Waiting for Connections...");
 		}
 		catch(IOException ex) {
