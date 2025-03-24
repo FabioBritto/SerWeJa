@@ -141,7 +141,6 @@ public class WebServer {
 				try {
 					File appDir = new File(WebConfig.APP_ROOT);
 					URL url = appDir.toURI().toURL();
-					System.out.println(url.toString());
 					URL urls[] = new URL[] {url};				
 					
 					URLClassLoader classLoader = new URLClassLoader(urls);
@@ -150,12 +149,17 @@ public class WebServer {
 					
 					Class<?> classRef = classLoader.loadClass(className);
 					
+					Object instance = classRef.getDeclaredConstructor().newInstance();
 					/*
 					 * Listando os Metadados
 					 */
 					
 					for(Method m : classRef.getDeclaredMethods()) {
-						System.out.println("A class " + className + " tem o método: " + m.getName());
+						response.write("HTTP/1.1 200 " + WebConfig.textCodes.get(200)+ "\r\n");
+						response.setHeader("Content-Type", "text/html");
+						String res = (String) classRef.getMethod("doGet").invoke(instance);
+						response.setContent(res.getBytes());
+						response.close();
 					}
 					//Object instance = classRef.getDeclaredConstructor().newInstance();
 				}

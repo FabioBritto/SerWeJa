@@ -27,5 +27,7 @@ public class WebConfig {
 	
 	public static HashMap<String, String> appPath = new HashMap<>() {{
 		put("/appteste", "HelloWorld");
+		put("/apptestepkg", "teste.App");
+		put("/isiflix", "flix.britto.Hello");
 	}};
 }
