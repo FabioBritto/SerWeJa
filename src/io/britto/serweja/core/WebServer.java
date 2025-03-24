@@ -1,14 +1,16 @@
 package io.britto.serweja.core;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.LocalDate;
 
 import io.britto.serweja.http.Request;
 import io.britto.serweja.http.Response;
@@ -119,12 +121,8 @@ public class WebServer {
 	}
 	
 	private void handleOutput(Socket socket, Request request, Response response) {
-//		WebLogger.log("HTTP Method: " + httpMethod);
-//		WebLogger.log("Resource Path: " + resourcePath);
-		
-		//resourcePath = resourcePath.replace("/", "\\");		
+	
 		String completePath = WebConfig.DOCUMENT_ROOT + request.getPath();
-		//completePath = completePath.replace(" ", "");
 		
 		try {
 			if(Files.exists(Paths.get(completePath))){
@@ -137,6 +135,33 @@ public class WebServer {
 				//response.write(("Date:" + LocalDate.now().toString())+ "\r\n");
 				response.setContent(content);
 				response.close();
+			}
+			else if(WebConfig.appPath.get(request.getPath()) != null) {
+				WebLogger.log("Estamos na parte de EXECUTAR APPS");
+				try {
+					File appDir = new File(WebConfig.APP_ROOT);
+					URL url = appDir.toURI().toURL();
+					System.out.println(url.toString());
+					URL urls[] = new URL[] {url};				
+					
+					URLClassLoader classLoader = new URLClassLoader(urls);
+					
+					String className = WebConfig.appPath.get(request.getPath());
+					
+					Class<?> classRef = classLoader.loadClass(className);
+					
+					/*
+					 * Listando os Metadados
+					 */
+					
+					for(Method m : classRef.getDeclaredMethods()) {
+						System.out.println("A class " + className + " tem o método: " + m.getName());
+					}
+					//Object instance = classRef.getDeclaredConstructor().newInstance();
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+				}
 			}
 			else {
 				WebLogger.log("404 - NOT FOUND");
