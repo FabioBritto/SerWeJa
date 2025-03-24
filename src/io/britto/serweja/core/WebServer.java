@@ -131,8 +131,9 @@ public class WebServer {
 				WebLogger.log("Complete Path: " + completePath);
 				byte[] content = Files.readAllBytes(Paths.get(completePath));
 				String extension = completePath.substring(completePath.lastIndexOf(".") + 1);
-				response.write("HTTP/1.1 200" + WebConfig.textCodes.get(200)+ "\r\n");
-				response.write("Content-Type" +  WebConfig.content.get(extension)+"\r\n");
+				response.write("HTTP/1.1 200 " + WebConfig.textCodes.get(200)+ "\r\n");
+				response.setHeader("Content-Type", WebConfig.content.get(extension));
+				response.write("Content-Type: " +  WebConfig.content.get(extension)+"\r\n");
 				//response.write(("Date:" + LocalDate.now().toString())+ "\r\n");
 				response.setContent(content);
 				response.close();
