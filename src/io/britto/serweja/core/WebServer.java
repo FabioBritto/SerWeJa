@@ -1,21 +1,18 @@
 package io.britto.serweja.core;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import io.britto.serweja.http.Request;
-import io.britto.serweja.http.Response;
 import io.britto.serweja.util.WebConfig;
 import io.britto.serweja.util.WebLogger;
+import io.ee.serweja.http.BrittoHttpRequest;
+import io.ee.serweja.http.BrittoHttpResponse;
+import io.ee.serweja.http.BrittoHttpServlet;
 
 public class WebServer {
 
@@ -61,7 +58,7 @@ public class WebServer {
 	
 	private void handleRequest(Socket socket) {
 		try {
-			Request request = new Request();
+			BrittoHttpRequest request = new BrittoHttpRequest();
 			
 			InputStreamReader inReader = new InputStreamReader(socket.getInputStream());
 			
@@ -112,7 +109,7 @@ public class WebServer {
 				
 			}
 			WebLogger.log(request.toString());
-			handleOutput(socket, request, new Response(socket.getOutputStream()));
+			handleOutput(socket, request, new BrittoHttpResponse(socket.getOutputStream()));
 			socket.close();
 		}
 		catch(IOException e) {
@@ -120,11 +117,15 @@ public class WebServer {
 		}
 	}
 	
-	private void handleOutput(Socket socket, Request request, Response response) {
+	private void handleOutput(Socket socket, BrittoHttpRequest request, BrittoHttpResponse response) {
 	
-		String completePath = WebConfig.DOCUMENT_ROOT + request.getPath();
+		String completePath = WebConfig.DOCUMENT_FOLDER + WebConfig.DOC_ROOT + request.getPath();
+		BrittoHttpServlet servlet;
 		
 		try {
+			/*
+			 * Tudo dentro do IF é um CONTEÚDO ESTÁTICO
+			 */
 			if(Files.exists(Paths.get(completePath))){
 				WebLogger.log("Complete Path: " + completePath);
 				byte[] content = Files.readAllBytes(Paths.get(completePath));
@@ -136,35 +137,16 @@ public class WebServer {
 				response.setContent(content);
 				response.close();
 			}
-			else if(WebConfig.appPath.get(request.getPath()) != null) {
-				WebLogger.log("Estamos na parte de EXECUTAR APPS");
-				try {
-					File appDir = new File(WebConfig.APP_ROOT);
-					URL url = appDir.toURI().toURL();
-					URL urls[] = new URL[] {url};				
-					
-					URLClassLoader classLoader = new URLClassLoader(urls);
-					
-					String className = WebConfig.appPath.get(request.getPath());
-					
-					Class<?> classRef = classLoader.loadClass(className);
-					
-					Object instance = classRef.getDeclaredConstructor().newInstance();
-					/*
-					 * Listando os Metadados
-					 */
-					
-					for(Method m : classRef.getDeclaredMethods()) {
-						response.write("HTTP/1.1 200 " + WebConfig.textCodes.get(200)+ "\r\n");
-						response.setHeader("Content-Type", "text/html");
-						String res = (String) classRef.getMethod("doGet").invoke(instance);
-						response.setContent(res.getBytes());
-						response.close();
-					}
-					//Object instance = classRef.getDeclaredConstructor().newInstance();
+			/*
+			 * Tudo dentro do ELSE IF é um CONTEÚDO DINÂMICO
+			 */
+			else if(ServletFinder.findServlet(request.getPath()) != null) {
+				servlet = ServletFinder.findServlet(request.getPath());
+				if(request.getHttpMethod().equals("GET")) {
+					servlet.doGet(request, response);
 				}
-				catch(Exception e) {
-					e.printStackTrace();
+				else {
+					servlet.doPost(request, response);
 				}
 			}
 			else {

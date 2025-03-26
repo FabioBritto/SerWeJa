@@ -3,9 +3,10 @@ package io.britto.serweja.util;
 import java.util.HashMap;
 
 public class WebConfig {
-
-	public static final String DOCUMENT_ROOT="/Users/Samsung/Documents/SerWeJa";
-	public static final String APP_ROOT="/Users/Samsung/Documents/serweja-apps";
+	
+	public static final String DOCUMENT_FOLDER="/Users/Samsung/Documents/SerWeJa";
+	public static final String DOC_ROOT="/SMP-FLD"; //Simple Folder
+	public static final String APP_ROOT="/WEB-FLD"; //Web Folder
 	
 	public static HashMap<String, String> content = new HashMap<>() {
 	{
@@ -20,14 +21,10 @@ public class WebConfig {
 	public static HashMap<Integer, String> textCodes = new HashMap<>() {{
 		put(200, "OK");
 		put(400, "BAD REQUEST");
-		put(404, "NOT FOUND");
+		put(401, "UNAUTHORIZED");
 		put(403, "FORBIDDEN");
+		put(404, "NOT FOUND");
+		put(405, "METHOD NOT ALLOWED");
 		put(500, "INTERNAL SERVER ERROR");
-	}};
-	
-	public static HashMap<String, String> appPath = new HashMap<>() {{
-		put("/appteste", "HelloWorld");
-		put("/apptestepkg", "teste.App");
-		put("/isiflix", "flix.britto.Hello");
 	}};
 }
