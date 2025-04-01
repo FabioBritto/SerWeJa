@@ -8,6 +8,7 @@ public class WebConfig {
 	public static final String DOC_ROOT="/SMP-FLD"; //Simple Folder
 	public static final String APP_ROOT="/WEB-FLD"; //Web Folder
 	
+	//Tipos de mídia suportados pelo meu servidor
 	public static HashMap<String, String> content = new HashMap<>() {
 	{
 		put(".html", "text/html");
@@ -16,6 +17,8 @@ public class WebConfig {
 		put(".png", "image/png");
 		put(".jpeg", "image/jpeg");
 		put(".txt", "text/plain");
+		put("js","text/javascript");
+		put("css","text/css");
 	}};
 	
 	public static HashMap<Integer, String> textCodes = new HashMap<>() {{

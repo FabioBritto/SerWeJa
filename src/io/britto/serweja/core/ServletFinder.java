@@ -21,7 +21,7 @@ public class ServletFinder {
 			for (File className : classes) { // Para garantir segurança
 
 				if (className.getName().endsWith(".class")) {
-
+					WebLogger.log("Found File: " + className.getName());
 					File folderFile = new File(classFolder);
 					URL url = folderFile.toURI().toURL();
 					URL urls[] = new URL[] { url };
@@ -37,6 +37,7 @@ public class ServletFinder {
 							BrittoServlet servletAnnotation = (BrittoServlet) an;
 							WebLogger.log("     + Request Path: " + servletAnnotation.path());
 							if(servletAnnotation.path().equals(path)) {
+								//loader.close();
 								return (BrittoHttpServlet) classRef.getDeclaredConstructor().newInstance();	
 							}
 						}
